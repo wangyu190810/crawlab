@@ -14,9 +14,10 @@ type ConfigSpiderData struct {
 	StartStage string            `yaml:"start_stage" json:"start_stage"`
 	Stages     []Stage           `yaml:"stages" json:"stages"`
 	Settings   map[string]string `yaml:"settings" json:"settings"`
-
+	Goose      bool        		 `yaml:"goose" json:"goose"`
 	// 自定义爬虫
 	Cmd string `yaml:"cmd" json:"cmd"`
+
 }
 
 type Stage struct {

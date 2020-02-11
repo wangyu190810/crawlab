@@ -2,6 +2,7 @@ name: "toscrapy_books"
 start_url: "http://news.163.com/special/0001386F/rank_news.html"
 start_stage: "list"
 engine: "scrapy"
+goose: true
 stages:
 - name: list
   is_list: true

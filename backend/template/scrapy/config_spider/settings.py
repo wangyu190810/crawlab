@@ -58,6 +58,10 @@ ROBOTSTXT_OBEY = True
 #DOWNLOADER_MIDDLEWARES = {
 #    'config_spider.middlewares.ConfigSpiderDownloaderMiddleware': 543,
 #}
+DOWNLOADER_MIDDLEWARES = {
+   #这个config_spider为你项目的名字
+   'config_spider.middlewares.ProxyMiddleware': 100,  
+}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html

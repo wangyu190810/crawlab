@@ -18,9 +18,16 @@ type ScrapyGenerator struct {
 // 生成爬虫文件
 func (g ScrapyGenerator) Generate() error {
 	// 生成 items.py
-	if err := g.ProcessItems(); err != nil {
-		return err
+	if g.ConfigData.Goose{
+		if err := g.ProcessGooseItems(); err != nil {
+			return err
+		}
+	}else{
+		if err := g.ProcessItems(); err != nil {
+			return err
+		}
 	}
+	
 
 	// 生成 spider.py
 	if err := g.ProcessSpider(); err != nil {
@@ -65,6 +72,61 @@ func (g ScrapyGenerator) ProcessItems() error {
 	return nil
 }
 
+
+func (g ScrapyGenerator) ProcessGooseItems() error {
+	// 待处理文件名
+	src := g.Spider.Src
+	filePath := filepath.Join(src, "config_spider", "items.py")
+
+	// 获取所有字段
+	fields := g.GetAllFields()
+
+	// 字段名列表（包含默认字段名）
+	fieldNames := []string{
+		"_id",
+		"task_id",
+		"ts",
+		"title",
+		"content",
+		"raw_html",
+		"publish_datetime_utc",
+		"tags",
+		"publish_date",
+	}
+
+	// 加入字段
+	for _, field := range fields {
+		fieldNames = append(fieldNames, field.Name)
+	}
+	fieldNames = removeDuplicateElement(fieldNames)
+
+	// 将字段名转化为python代码
+	str := ""
+	for _, fieldName := range fieldNames {
+		line := g.PadCode(fmt.Sprintf("%s = scrapy.Field()", fieldName), 1)
+		str += line
+	}
+
+	// 将占位符替换为代码
+	if err := utils.SetFileVariable(filePath, constants.AnchorItems, str); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func removeDuplicateElement(items []string) []string {
+    result := make([]string, 0, len(items))
+    temp := map[string]struct{}{}
+    for _, item := range items {
+        if _, ok := temp[item]; !ok {
+            temp[item] = struct{}{}
+            result = append(result, item)
+        }
+    }
+    return result
+}
+
 // 生成 spider.py
 func (g ScrapyGenerator) ProcessSpider() error {
 	// 待处理文件名
@@ -105,7 +167,15 @@ func (g ScrapyGenerator) GetParserString(stageName string, stage entity.Stage) s
 		strParse = g.GetListParserString(stageName, stage)
 	} else {
 		// 非列表逻辑
-		strParse = g.GetNonListParserString(stageName, stage)
+
+		if g.ConfigData.Goose {
+			// 使用goose 模块
+			strParse = g.GetNonListGooesParserString(stageName, stage)
+		}else {
+			// 使用自定义模块
+			strParse = g.GetNonListParserString(stageName, stage)
+		}
+			
 	}
 
 	// 构造
@@ -136,6 +206,37 @@ func (g ScrapyGenerator) GetNonListParserString(stageName string, stage entity.S
 		line = g.PadCode(line, 2)
 		str += line
 	}
+
+	// next stage 字段
+	if f, err := g.GetNextStageField(stage); err == nil {
+		// 如果找到 next stage 字段，进行下一个回调
+		str += g.PadCode(fmt.Sprintf(`yield scrapy.Request(url="get_real_url(response, item['%s'])", callback=self.parse_%s, meta={'item': item})`, f.Name, f.NextStage), 2)
+	} else {
+		// 如果没找到 next stage 字段，返回 item
+		str += g.PadCode(fmt.Sprintf(`yield item`), 2)
+	}
+
+	// 加入末尾换行
+	str += g.PadCode("", 0)
+
+	return str
+}
+
+
+func (g ScrapyGenerator) GetNonListGooesParserString(stageName string, stage entity.Stage) string {
+	str := ""
+
+	// 获取或构造item
+	str += g.PadCode("item = Item() if response.meta.get('item') is None else response.meta.get('item')", 2)
+
+	// 遍历字段列表
+	str += g.PadCode(fmt.Sprintf(`article = goose.extract(raw_html=response.text)`),2)
+	str += g.PadCode(fmt.Sprintf(`item['title'] = article.title`),2)
+	str += g.PadCode(fmt.Sprintf(`item["content"]= article.cleaned_text`),2)
+	str += g.PadCode(fmt.Sprintf(`item['raw_html'] = article.raw_html`),2)
+	str += g.PadCode(fmt.Sprintf(`item['publish_datetime_utc'] = article.publish_datetime_utc`),2)
+	str += g.PadCode(fmt.Sprintf(`item['tags'] = article.tags`),2)
+	str += g.PadCode(fmt.Sprintf(`item['publish_date'] = article.publish_date`),2)
 
 	// next stage 字段
 	if f, err := g.GetNextStageField(stage); err == nil {

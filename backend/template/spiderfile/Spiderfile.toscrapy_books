@@ -2,6 +2,7 @@ name: "toscrapy_books"
 start_url: "http://books.toscrape.com"
 start_stage: "list"
 engine: "scrapy"
+goose: true
 stages:
 - name: list
   is_list: true

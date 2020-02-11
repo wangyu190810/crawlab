@@ -1,6 +1,7 @@
 name: toscrapy_books
 start_url: http://www.baidu.com/s?wd=crawlab
 start_stage: list
+goose: true
 engine: scrapy
 stages:
 - name: list

@@ -101,3 +101,11 @@ class ConfigSpiderDownloaderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+class ProxyMiddleware(object):
+    def process_request(self,request,spider):
+        if request.url.startswith("http://"):
+            request.meta['proxy']="http://"+'127.0.0.1:10809'          # http代理
+        elif request.url.startswith("https://"):
+            request.meta['proxy']="https://"+'127.0.0.1:10809'         # https代理
+
