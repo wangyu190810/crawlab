@@ -92,6 +92,8 @@ func (g ScrapyGenerator) ProcessGooseItems() error {
 		"publish_datetime_utc",
 		"tags",
 		"publish_date",
+		"title_zh",
+		"content_zh",
 	}
 
 	// 加入字段
@@ -164,7 +166,13 @@ func (g ScrapyGenerator) GetParserString(stageName string, stage entity.Stage) s
 	strParse := ""
 	if stage.IsList {
 		// 列表逻辑
-		strParse = g.GetListParserString(stageName, stage)
+			if g.ConfigData.Goose {
+				// 使用goose 模块,过滤重复数据
+				strParse = g.GetUniqueUrlListParserString(stageName, stage)
+			}else {
+				// 使用自定义模块
+				strParse = g.GetListParserString(stageName, stage)
+			}
 	} else {
 		// 非列表逻辑
 
@@ -297,6 +305,61 @@ func (g ScrapyGenerator) GetListParserString(stageName string, stage entity.Stag
 
 	return str
 }
+
+
+
+func (g ScrapyGenerator) GetUniqueUrlListParserString(stageName string, stage entity.Stage) string {
+	str := ""
+
+	// 获取前一个 stage 的 item
+	str += g.PadCode(`prev_item = response.meta.get('item')`, 2)
+
+	// for 循环遍历列表
+	str += g.PadCode(fmt.Sprintf(`for elem in response.%s:`, g.GetListString(stage)), 2)
+
+	// 构造item
+	for _, f := range stage.Fields {
+		if f.Name == "url"{
+			str += g.PadCode(fmt.Sprintf(`url = elem.%s.extract_first()`, g.GetExtractStringFromField(f)),3)
+			str += g.PadCode("if unique_url(url):",3)
+			str += g.PadCode("continue",4)
+		}
+	}
+	str += g.PadCode(`item = Item()`, 3)
+
+	// 遍历字段列表
+	for _, f := range stage.Fields {
+		line := fmt.Sprintf(`item['%s'] = elem.%s.extract_first()`, f.Name, g.GetExtractStringFromField(f))
+		line = g.PadCode(line, 3)
+		str += line
+	}
+
+	// 把前一个 stage 的 item 值赋给当前 item
+	str += g.PadCode(`if prev_item is not None:`, 3)
+	str += g.PadCode(`for key, value in prev_item.items():`, 4)
+	str += g.PadCode(`item[key] = value`, 5)
+
+	// next stage 字段
+	if f, err := g.GetNextStageField(stage); err == nil {
+		// 如果找到 next stage 字段，进行下一个回调
+		str += g.PadCode(fmt.Sprintf(`yield scrapy.Request(url=get_real_url(response, item['%s']), callback=self.parse_%s, meta={'item': item})`, f.Name, f.NextStage), 3)
+	} else {
+		// 如果没找到 next stage 字段，返回 item
+		str += g.PadCode(fmt.Sprintf(`yield item`), 3)
+	}
+
+	// 分页
+	if stage.PageCss != "" || stage.PageXpath != "" {
+		str += g.PadCode(fmt.Sprintf(`next_url = response.%s.extract_first()`, g.GetExtractStringFromStage(stage)), 2)
+		str += g.PadCode(fmt.Sprintf(`yield scrapy.Request(url=get_real_url(response, next_url), callback=self.parse_%s, meta={'item': prev_item})`, stageName), 2)
+	}
+
+	// 加入末尾换行
+	str += g.PadCode("", 0)
+
+	return str
+}
+
 
 // 获取所有字段
 func (g ScrapyGenerator) GetAllFields() []entity.Field {

@@ -4,7 +4,7 @@ import re
 from config_spider.items import Item
 from urllib.parse import urljoin, urlparse
 from goose3 import Goose
-
+from config_spider.pipelines import unique_url
 goose = Goose()
 
 def get_real_url(response, url):
