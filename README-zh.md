@@ -281,28 +281,3 @@ Crawlab使用起来很方便，也很通用，可以适用于几乎任何主流�
 
 **注意: v0.3.0版本已将基于Celery的Python版本切换为了Golang版本，如何部署请参照文档**
 
-## 贡献者
-<a href="https://github.com/tikazyq">
-  <img src="https://avatars3.githubusercontent.com/u/3393101?s=460&v=4" height="80">
-</a>
-<a href="https://github.com/wo10378931">
-  <img src="https://avatars2.githubusercontent.com/u/8297691?s=460&v=4" height="80">
-</a>
-<a href="https://github.com/yaziming">
-  <img src="https://avatars2.githubusercontent.com/u/54052849?s=460&v=4" height="80">
-</a>
-<a href="https://github.com/hantmac">
-  <img src="https://avatars2.githubusercontent.com/u/7600925?s=460&v=4" height="80">
-</a>
-<a href="https://github.com/duanbin0414">
-  <img src="https://avatars3.githubusercontent.com/u/50389867?s=460&v=4" height="80">
-</a>
-
-## 社区 & 赞助
-
-如果您觉得Crawlab对您的日常开发或公司有帮助，请加作者微信 tikazyq1 并注明"Crawlab"，作者会将你拉入群。或者，您可以扫下方支付宝二维码给作者打赏去升级团队协作软件或买一杯咖啡。
-
-<p align="center">
-    <img src="https://crawlab.oss-cn-hangzhou.aliyuncs.com/gitbook/qrcode.png" height="360">
-    <img src="https://crawlab.oss-cn-hangzhou.aliyuncs.com/gitbook/payment.jpg" height="360">
-</p>
