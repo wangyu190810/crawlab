@@ -9,17 +9,18 @@ import (
 	"crawlab/services/spider_handler"
 	"crawlab/utils"
 	"fmt"
-	"github.com/apex/log"
-	"github.com/globalsign/mgo"
-	"github.com/globalsign/mgo/bson"
-	"github.com/satori/go.uuid"
-	"github.com/spf13/viper"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime/debug"
+
+	"github.com/apex/log"
+	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
+	uuid "github.com/satori/go.uuid"
+	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
 )
 
 type SpiderFileData struct {
@@ -294,6 +295,7 @@ func CancelSpider(id string) error {
 }
 
 func CopySpider(spider model.Spider, newName string) error {
+	return nil
 }
 
 // 启动爬虫服务
