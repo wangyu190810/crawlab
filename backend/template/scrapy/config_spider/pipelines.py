@@ -11,6 +11,7 @@ import random
 import requests
 from pymongo import MongoClient
 import logging
+import time
 
 mongo = MongoClient(
     host=os.environ.get('CRAWLAB_MONGO_HOST') or 'localhost',
@@ -36,16 +37,11 @@ class ConfigCertSpiderPipeline(object):
         item['task_id'] = task_id
         title = item['title']
         content = item['content']
-        translate = cert_translate(title,content,flag)
-        logging.info("translate data %s" %str(translate))
-        if len(translate)== 2:
-            title_zh, content_zh = translate
-            item['title_zh'] = title_zh
-            item['content_zh'] = content_zh
-        elif len(translate)== 1:
-            item['content_zh'] = translate
-        else:
-            pass
+        translate_content = baidu_translate(content,target_lang='zh')
+        item['content_zh'] = translate_content
+        time.sleep(1)
+        translate_title = baidu_translate(title,target_lang='zh')
+        item['title_zh'] = translate_title
         if col is not None:
             col.save(item)
         return item
@@ -76,6 +72,8 @@ def cert_translate(title,content,flag):
         if len(title) ==0:
             return translate_content
         return unpack_data(translate_content,flag)
+
+
 
 
 def md5_hash(content=None):
