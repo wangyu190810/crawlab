@@ -39,7 +39,7 @@ class ConfigCertSpiderPipeline(object):
         content = item['content']
         translate_content = baidu_translate(content,target_lang='zh')
         item['content_zh'] = translate_content
-        time.sleep(1)
+        time.sleep(1.5)
         translate_title = baidu_translate(title,target_lang='zh')
         item['title_zh'] = translate_title
         if col is not None:
