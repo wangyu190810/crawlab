@@ -24,7 +24,9 @@ db = mongo[os.environ.get('CRAWLAB_MONGO_DB') or 'test']
 col = db[os.environ.get('CRAWLAB_COLLECTION') or 'test']
 task_id = os.environ.get('CRAWLAB_TASK_ID')
 flag = "分隔符"
-
+###添加自己的翻译key###
+appid = ''
+secret = ''
 class ConfigSpiderPipeline(object):
     def process_item(self, item, spider):
         item['task_id'] = task_id
@@ -92,8 +94,7 @@ def md5_hash(content=None):
         return md5.hexdigest()
 
 def baidu_translate(text, target_lang='en'):
-    appid = '20200212000383025'
-    secret = 'qDSp2yFJgIYuxkTPlj8q'
+
     salt = random.randint(32768, 65536)
     response = requests.post('https://fanyi-api.baidu.com/api/trans/vip/translate', data={
         'sign': md5_hash('%s%s%s%s' % (appid, text, salt, secret)),
