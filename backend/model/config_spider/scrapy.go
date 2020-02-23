@@ -18,17 +18,19 @@ type ScrapyGenerator struct {
 // 生成爬虫文件
 func (g ScrapyGenerator) Generate() error {
 	// 生成 items.py
-	if g.ConfigData.Goose{
+	if g.ConfigData.Goose {
 		if err := g.ProcessGooseItems(); err != nil {
 			return err
 		}
-	}else{
+	} else {
 		if err := g.ProcessItems(); err != nil {
 			return err
 		}
 	}
-	
-
+	if g.ConfigData.Proxy == "http" {
+		// 修改settins.py 文件
+		g.ProcessMiddlewaresSettings()
+	}
 	// 生成 spider.py
 	if err := g.ProcessSpider(); err != nil {
 		return err
@@ -72,6 +74,22 @@ func (g ScrapyGenerator) ProcessItems() error {
 	return nil
 }
 
+// 生成 items.py
+func (g ScrapyGenerator) ProcessMiddlewaresSettings() error {
+	// 待处理文件名
+	src := g.Spider.Src
+	filePath := filepath.Join(src, "config_spider", "settings.py")
+	str := ""
+	str += g.PadCode(fmt.Sprintf("DOWNLOADER_MIDDLEWARES = {"), 0)
+	str += g.PadCode(fmt.Sprintf("'config_spider.middlewares.ProxyMiddleware': 100,  "), 1)
+	str += g.PadCode(fmt.Sprintf("}"), 0)
+	// 将占位符替换为代码
+	if err := utils.SetFileVariable(filePath, constants.AnchorProxy, str); err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func (g ScrapyGenerator) ProcessGooseItems() error {
 	// 待处理文件名
@@ -118,15 +136,15 @@ func (g ScrapyGenerator) ProcessGooseItems() error {
 }
 
 func removeDuplicateElement(items []string) []string {
-    result := make([]string, 0, len(items))
-    temp := map[string]struct{}{}
-    for _, item := range items {
-        if _, ok := temp[item]; !ok {
-            temp[item] = struct{}{}
-            result = append(result, item)
-        }
-    }
-    return result
+	result := make([]string, 0, len(items))
+	temp := map[string]struct{}{}
+	for _, item := range items {
+		if _, ok := temp[item]; !ok {
+			temp[item] = struct{}{}
+			result = append(result, item)
+		}
+	}
+	return result
 }
 
 // 生成 spider.py
@@ -166,24 +184,24 @@ func (g ScrapyGenerator) GetParserString(stageName string, stage entity.Stage) s
 	strParse := ""
 	if stage.IsList {
 		// 列表逻辑
-			if g.ConfigData.Goose {
-				// 使用goose 模块,过滤重复数据
-				strParse = g.GetUniqueUrlListParserString(stageName, stage)
-			}else {
-				// 使用自定义模块
-				strParse = g.GetListParserString(stageName, stage)
-			}
+		if g.ConfigData.Goose {
+			// 使用goose 模块,过滤重复数据
+			strParse = g.GetUniqueUrlListParserString(stageName, stage)
+		} else {
+			// 使用自定义模块
+			strParse = g.GetListParserString(stageName, stage)
+		}
 	} else {
 		// 非列表逻辑
 
 		if g.ConfigData.Goose {
 			// 使用goose 模块
 			strParse = g.GetNonListGooesParserString(stageName, stage)
-		}else {
+		} else {
 			// 使用自定义模块
 			strParse = g.GetNonListParserString(stageName, stage)
 		}
-			
+
 	}
 
 	// 构造
@@ -230,7 +248,6 @@ func (g ScrapyGenerator) GetNonListParserString(stageName string, stage entity.S
 	return str
 }
 
-
 func (g ScrapyGenerator) GetNonListGooesParserString(stageName string, stage entity.Stage) string {
 	str := ""
 
@@ -238,13 +255,13 @@ func (g ScrapyGenerator) GetNonListGooesParserString(stageName string, stage ent
 	str += g.PadCode("item = Item() if response.meta.get('item') is None else response.meta.get('item')", 2)
 
 	// 遍历字段列表
-	str += g.PadCode(fmt.Sprintf(`article = goose.extract(raw_html=response.text)`),2)
-	str += g.PadCode(fmt.Sprintf(`item['title'] = article.title`),2)
-	str += g.PadCode(fmt.Sprintf(`item["content"]= article.cleaned_text`),2)
-	str += g.PadCode(fmt.Sprintf(`item['raw_html'] = article.raw_html`),2)
-	str += g.PadCode(fmt.Sprintf(`item['publish_datetime_utc'] = article.publish_datetime_utc`),2)
-	str += g.PadCode(fmt.Sprintf(`item['tags'] = article.tags`),2)
-	str += g.PadCode(fmt.Sprintf(`item['publish_date'] = article.publish_date`),2)
+	str += g.PadCode(fmt.Sprintf(`article = goose.extract(raw_html=response.text)`), 2)
+	str += g.PadCode(fmt.Sprintf(`item['title'] = article.title`), 2)
+	str += g.PadCode(fmt.Sprintf(`item["content"]= article.cleaned_text`), 2)
+	str += g.PadCode(fmt.Sprintf(`item['raw_html'] = article.raw_html`), 2)
+	str += g.PadCode(fmt.Sprintf(`item['publish_datetime_utc'] = article.publish_datetime_utc`), 2)
+	str += g.PadCode(fmt.Sprintf(`item['tags'] = article.tags`), 2)
+	str += g.PadCode(fmt.Sprintf(`item['publish_date'] = article.publish_date`), 2)
 
 	// next stage 字段
 	if f, err := g.GetNextStageField(stage); err == nil {
@@ -306,8 +323,6 @@ func (g ScrapyGenerator) GetListParserString(stageName string, stage entity.Stag
 	return str
 }
 
-
-
 func (g ScrapyGenerator) GetUniqueUrlListParserString(stageName string, stage entity.Stage) string {
 	str := ""
 
@@ -319,10 +334,10 @@ func (g ScrapyGenerator) GetUniqueUrlListParserString(stageName string, stage en
 
 	// 构造item
 	for _, f := range stage.Fields {
-		if f.Name == "url"{
-			str += g.PadCode(fmt.Sprintf(`url = elem.%s.extract_first()`, g.GetExtractStringFromField(f)),3)
-			str += g.PadCode("if unique_url(url):",3)
-			str += g.PadCode("continue",4)
+		if f.Name == "url" {
+			str += g.PadCode(fmt.Sprintf(`url = elem.%s.extract_first()`, g.GetExtractStringFromField(f)), 3)
+			str += g.PadCode("if unique_url(url):", 3)
+			str += g.PadCode("continue", 4)
 		}
 	}
 	str += g.PadCode(`item = Item()`, 3)
@@ -359,7 +374,6 @@ func (g ScrapyGenerator) GetUniqueUrlListParserString(stageName string, stage en
 
 	return str
 }
-
 
 // 获取所有字段
 func (g ScrapyGenerator) GetAllFields() []entity.Field {

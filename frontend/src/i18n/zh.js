@@ -177,6 +177,9 @@ export default {
   'Stage Name': '阶段名称',
   'Start Stage': '开始阶段',
   'Engine': '引擎',
+  'Proxy': '代理',
+  'Goose': '自动提取内容',
+  
   'Selector Type': '选择器类别',
   'Selector': '选择器',
   'Is Attribute': '是否为属性',

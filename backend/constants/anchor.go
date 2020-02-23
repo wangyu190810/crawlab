@@ -5,4 +5,5 @@ const (
 	AnchorStartUrl   = "START_URL"
 	AnchorItems      = "ITEMS"
 	AnchorParsers    = "PARSERS"
+	AnchorProxy      = "PROXY"
 )

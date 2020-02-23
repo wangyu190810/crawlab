@@ -58,10 +58,11 @@ DOWNLOAD_DELAY = 3
 #DOWNLOADER_MIDDLEWARES = {
 #    'config_spider.middlewares.ConfigSpiderDownloaderMiddleware': 543,
 #}
-DOWNLOADER_MIDDLEWARES = {
-   #这个config_spider为你项目的名字
-   'config_spider.middlewares.ProxyMiddleware': 100,  
-}
+# DOWNLOADER_MIDDLEWARES = {
+#    #这个config_spider为你项目的名字
+#    'config_spider.middlewares.ProxyMiddleware': 100,  
+# }
+###PROXY###
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
