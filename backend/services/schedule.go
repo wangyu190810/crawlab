@@ -22,6 +22,27 @@ func AddScheduleTask(s model.Schedule) func() {
 		// 生成任务ID
 		id := uuid.NewV4()
 
+		// 参数
+		var param string
+
+		// 爬虫
+		spider, err := model.GetSpider(s.SpiderId)
+		if err != nil {
+			return
+		}
+
+		// scrapy 爬虫
+		if spider.IsScrapy {
+			if s.ScrapySpider == "" {
+				log.Errorf("scrapy spider is not set")
+				debug.PrintStack()
+				return
+			}
+			param = s.ScrapySpider + " -L " + s.ScrapyLogLevel + " " + s.Param
+		} else {
+			param = s.Param
+		}
+
 		if s.RunType == constants.RunTypeAllNodes {
 			// 所有节点
 			nodes, err := model.GetNodeList(nil)
@@ -33,11 +54,11 @@ func AddScheduleTask(s model.Schedule) func() {
 					Id:       id.String(),
 					SpiderId: s.SpiderId,
 					NodeId:   node.Id,
-					Param:    s.Param,
+					Param:    param,
 					UserId:   s.UserId,
 				}
 
-				if err := AddTask(t); err != nil {
+				if _, err := AddTask(t); err != nil {
 					return
 				}
 			}
@@ -46,10 +67,10 @@ func AddScheduleTask(s model.Schedule) func() {
 			t := model.Task{
 				Id:       id.String(),
 				SpiderId: s.SpiderId,
-				Param:    s.Param,
+				Param:    param,
 				UserId:   s.UserId,
 			}
-			if err := AddTask(t); err != nil {
+			if _, err := AddTask(t); err != nil {
 				log.Errorf(err.Error())
 				debug.PrintStack()
 				return
@@ -61,11 +82,11 @@ func AddScheduleTask(s model.Schedule) func() {
 					Id:       id.String(),
 					SpiderId: s.SpiderId,
 					NodeId:   nodeId,
-					Param:    s.Param,
+					Param:    param,
 					UserId:   s.UserId,
 				}
 
-				if err := AddTask(t); err != nil {
+				if _, err := AddTask(t); err != nil {
 					return
 				}
 			}

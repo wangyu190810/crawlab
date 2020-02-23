@@ -45,6 +45,10 @@
       </div>
       <!--./filter-->
 
+      <!--legend-->
+      <status-legend/>
+      <!--./legend-->
+
       <!--table list-->
       <el-table :data="filteredTableData"
                 ref="table"
@@ -55,7 +59,7 @@
                 @row-click="onRowClick"
                 @selection-change="onSelectionChange">
       >
-        <el-table-column type="selection" width="55" reserve-selection/>
+        <el-table-column type="selection" width="45" align="center" reserve-selection/>
         <template v-for="col in columns">
           <el-table-column v-if="col.name === 'spider_name'"
                            :key="col.name"
@@ -169,10 +173,11 @@ import {
 } from 'vuex'
 import dayjs from 'dayjs'
 import StatusTag from '../../components/Status/StatusTag'
+import StatusLegend from '../../components/Status/StatusLegend'
 
 export default {
   name: 'TaskList',
-  components: { StatusTag },
+  components: { StatusLegend, StatusTag },
   data () {
     return {
       // setInterval handle

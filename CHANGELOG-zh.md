@@ -1,3 +1,27 @@
+# 0.4.7 (unknown)
+### 功能 / 优化
+- **更好的支持 Scrapy**. 爬虫识别，`settings.py` 配置，日志级别选择，爬虫选择. [#435](https://github.com/crawlab-team/crawlab/issues/435)
+- **Git 同步**. 允许用户将 Git 项目同步到 Crawlab.
+- **长任务支持**. 用户可以添加长任务爬虫，这些爬虫可以跑长期运行的任务. [425](https://github.com/crawlab-team/crawlab/issues/425)
+- **爬虫列表优化**. 分状态任务列数统计，任务列表详情弹出框，图例. [425](https://github.com/crawlab-team/crawlab/issues/425)
+- **版本升级检测**. 检测最新版本，通知用户升级.
+- **批量操作爬虫**. 允许用户批量运行/停止爬虫任务，以及批量删除爬虫.
+
+### Bug 修复
+
+# 0.4.6 (2020-02-13)
+### 功能 / 优化
+- **Node.js SDK**. 用户可以将 SDK 应用到他们的 Node.js 爬虫中.
+- **日志管理优化**. 日志搜索，错误高亮，自动滚动.
+- **任务执行流程优化**. 允许用户在触发任务后跳转到该任务详情页.
+- **任务展示优化**. 在爬虫详情页的最近任务表格中加入了“参数”列. [#295](https://github.com/crawlab-team/crawlab/issues/295)
+- **爬虫列表优化**. 在爬虫列表页加入"更新时间"和"创建时间". [#505](https://github.com/crawlab-team/crawlab/issues/505)
+- **页面加载占位器**. 
+
+### Bug 修复
+- **定时任务配置失去焦点**. [#519](https://github.com/crawlab-team/crawlab/issues/519)
+- **无法用 CLI 工具上传爬虫**. [#524](https://github.com/crawlab-team/crawlab/issues/524)
+
 # 0.4.5 (2020-02-03)
 ### 功能 / 优化
 - **交互式教程**. 引导用户了解 Crawlab 的主要功能.

@@ -83,6 +83,9 @@ func UploadSpiderToGridFsFromMaster(spider model.Spider) error {
 	// 生成MD5
 	spiderSync.CreateMd5File(gfFile2.Md5)
 
+	// 检查是否为 Scrapy 爬虫
+	spiderSync.CheckIsScrapy()
+
 	return nil
 }
 
@@ -200,6 +203,7 @@ func PublishSpider(spider model.Spider) {
 		log.Infof("path not found: %s", path)
 		spiderSync.Download()
 		spiderSync.CreateMd5File(gfFile.Md5)
+		spiderSync.CheckIsScrapy()
 		return
 	}
 	// md5文件不存在，则下载
@@ -257,15 +261,51 @@ func RemoveSpider(id string) error {
 	return nil
 }
 
+func CancelSpider(id string) error {
+	// 获取该爬虫
+	spider, err := model.GetSpider(bson.ObjectIdHex(id))
+	if err != nil {
+		return err
+	}
+
+	// 获取该爬虫待定或运行中的任务列表
+	query := bson.M{
+		"spider_id": spider.Id,
+		"status": bson.M{
+			"$in": []string{
+				constants.StatusPending,
+				constants.StatusRunning,
+			},
+		},
+	}
+	tasks, err := model.GetTaskList(query, 0, constants.Infinite, "-create_ts")
+	if err != nil {
+		return err
+	}
+
+	// 遍历任务列表，依次停止
+	for _, task := range tasks {
+		if err := CancelTask(task.Id); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func CopySpider(spider model.Spider, newName string) error {
+}
+
 // 启动爬虫服务
 func InitSpiderService() error {
 	// 构造定时任务执行器
-	c := cron.New(cron.WithSeconds())
-	if _, err := c.AddFunc("0 * * * * *", PublishAllSpiders); err != nil {
+	cPub := cron.New(cron.WithSeconds())
+	if _, err := cPub.AddFunc("0 * * * * *", PublishAllSpiders); err != nil {
 		return err
 	}
+
 	// 启动定时任务
-	c.Start()
+	cPub.Start()
 
 	if model.IsMaster() {
 		// 添加Demo爬虫
@@ -370,6 +410,16 @@ func InitSpiderService() error {
 
 		// 发布所有爬虫
 		PublishAllSpiders()
+
+		// 构造 Git 定时任务
+		GitCron = &GitCronScheduler{
+			cron: cron.New(cron.WithSeconds()),
+		}
+
+		// 启动 Git 定时任务
+		if err := GitCron.Start(); err != nil {
+			return err
+		}
 	}
 
 	return nil

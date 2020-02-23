@@ -30,9 +30,13 @@ ENV CRAWLAB_IS_DOCKER Y
 
 # install packages
 RUN apt-get update \
-	&& apt-get install -y curl git net-tools iputils-ping ntp ntpdate python3 python3-pip nginx \
+	&& apt-get install -y curl git net-tools iputils-ping ntp ntpdate python3 python3-pip nginx wget \
 	&& ln -s /usr/bin/pip3 /usr/local/bin/pip \
 	&& ln -s /usr/bin/python3 /usr/local/bin/python
+
+# install dumb-init
+RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.2/dumb-init_1.2.2_amd64
+RUN chmod +x /usr/local/bin/dumb-init
 
 # install backend
 RUN pip install scrapy pymongo bs4 requests crawlab-sdk scrapy-splash
@@ -41,7 +45,9 @@ RUN pip install scrapy pymongo bs4 requests crawlab-sdk scrapy-splash
 ADD . /app
 
 # copy backend files
-COPY --from=backend-build /go/bin/crawlab /usr/local/bin
+RUN mkdir -p /opt/bin
+COPY --from=backend-build /go/bin/crawlab /opt/bin
+RUN cp /opt/bin/crawlab /usr/local/bin/crawlab-server
 
 # copy frontend files
 COPY --from=frontend-build /app/dist /app/dist
@@ -49,6 +55,13 @@ COPY --from=frontend-build /app/conf/crawlab.conf /etc/nginx/conf.d
 
 # working directory
 WORKDIR /app/backend
+
+# timezone environment
+ENV TZ Asia/Shanghai
+
+# language environment
+ENV LC_ALL C.UTF-8
+ENV LANG C.UTF-8
 
 # frontend port
 EXPOSE 8080

@@ -1,3 +1,27 @@
+# 0.4.7 (unknown)
+### Features / Enhancement
+- **Better Support for Scrapy**. Spiders identification, `settings.py` configuration, log level selection, spider selection. [#435](https://github.com/crawlab-team/crawlab/issues/435)
+- **Git Sync**. Allow users to sync git projects to Crawlab.
+- **Long Task Support**. Users can add long-task spiders which is supposed to run without finishing. [#425](https://github.com/crawlab-team/crawlab/issues/425)
+- **Spider List Optimization**. Tasks count by status, tasks detail popup, legend. [#425](https://github.com/crawlab-team/crawlab/issues/425)
+- **Upgrade Check**. Check latest version and notifiy users to upgrade.
+- **Spiders Batch Operation**. Allow users to run/stop spider tasks and delete spiders in batches.
+
+### Bug Fixes
+
+# 0.4.6 (2020-02-13)
+### Features / Enhancement
+- **SDK for Node.js**. Users can apply SDK in their Node.js spiders.
+- **Log Management Optimization**. Log search, error highlight, auto-scrolling.
+- **Task Execution Process Optimization**. Allow users to be redirected to task detail page after triggering a task.
+- **Task Display Optimization**. Added "Param" in the Latest Tasks table in the spider detail page. [#295](https://github.com/crawlab-team/crawlab/issues/295)
+- **Spider List Optimization**. Added "Update Time" and "Create Time" in spider list page.
+- **Page Loading Placeholder**. 
+
+### Bug Fixes
+- **Lost Focus in Schedule Configuration**. [#519](https://github.com/crawlab-team/crawlab/issues/519)
+- **Unable to Upload Spider using CLI**. [#524](https://github.com/crawlab-team/crawlab/issues/524)
+
 # 0.4.5 (2020-02-03)
 ### Features / Enhancement
 - **Interactive Tutorial**. Guide users through the main functionalities of Crawlab.
